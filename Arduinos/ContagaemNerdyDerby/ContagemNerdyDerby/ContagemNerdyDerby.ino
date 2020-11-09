@@ -1,17 +1,26 @@
-#include <MatrixCascade.h>
-#include <SoftwareSerial.h>
+//Autor: Nicolas de Castro Silva
+//Descrição: Código utilizado no arduino que controla a contagem regressiva instalada na largada da pista
+//Componentes: Regulador de tensão de 5v 2A, 10 matrizes de led 8x8, arduino uno
+//Resalvas: 
+//1) As matrizes de LED consomem muita energia, por isso é recomendado usar uma fonte e um regulador de alta corrente
+//caso queria aumentar a intesidade dos LEDs
+//2) Para ser possivel ligar as 10 matrizes, foi feita uma ligação onde foram criadas duas linhas de matrizes, 5 matrizes em cada linha
+//devido a limitação de 8 matrizes ligadas em série. A ligação feita pode ser vista no repositório do GitHub  
 
-SoftwareSerial mySerial(2, 3);
-String data = "";
+#include <MatrixCascade.h> //Biblioteca de controle das matrizes
+#include <SoftwareSerial.h> //Biblioteca para comunicação com Arduino Central
 
-auto cascade = combineCascades(MatrixCascade<5>(7), MatrixCascade<5>(10));
+SoftwareSerial mySerial(2, 3); //Declaração das portar 2(RX) e 3(TX) para comunicação serial com arduino central
+String data = ""; //Variavel que armazenara as messasgens enviadas por serial
+
+auto cascade = combineCascades(MatrixCascade<5>(7), MatrixCascade<5>(10)); //Declaração da matriz
 
 void setup() {
-  Serial.begin(9600);
-  mySerial.begin(9600);
+  Serial.begin(9600); //Inicialização da comunicação serial com o PC
+  mySerial.begin(9600); //Inicialização da comunicação serial com o Arduino Central
 
-  delay(1000);
-  cascade.setIntensity(0);
+  delay(1000);//Espera para que as matrizes possam iniciar corretamente
+  cascade.setIntensity(0);//Configura a intensidade dos LED(0 a 15),CUIDADO!!!! Aumentar a intensidade faz o consumo de energia aumentar drasticamente
   cascade[0].setRotation(2);
   cascade[1].setRotation(2);
   cascade[2].setRotation(2);
@@ -22,9 +31,10 @@ void setup() {
   cascade[7].setRotation(2);
   cascade[8].setRotation(2);
   cascade[9].setRotation(2);
-  NerdyDerby();
+  NerdyDerby();// Mostra Nerdy Derby na tela
 }
 void loop() {
+  //Repetição responsavel por receber as mensagens via serial
   while (mySerial.available() > 0) {
     char character = mySerial.read();
     if (character != '\n') {
@@ -35,7 +45,7 @@ void loop() {
   if (data == "") {
     return;
   }
-  if (data.indexOf("start") != -1) {
+  if (data.indexOf("start") != -1) {//Se receber "start", inicia a contagem regressiva
     Show3();
     delay(1000);
     Show2();
@@ -61,7 +71,7 @@ void loop() {
 
 }
 
-void Clear() {
+void Clear() { // Função que apaga todos so LEDS
   for (int i = 0; i < 10; i++) {
     cascade[i].set({
       0b00000000,
@@ -76,7 +86,7 @@ void Clear() {
   }
 }
 
-void Bandeirada() {
+void Bandeirada() {//Animação de bandeirada
   for (int i = 0; i < 10; i++) {
     cascade[i].set({
       0b00001111,
@@ -183,7 +193,7 @@ void Bandeirada() {
   delay(100);
 }
 
-void Show2() {
+void Show2() {//Mostra numero 2
   cascade[2].set({
     0b00000000,
     0b00000000,
@@ -206,7 +216,7 @@ void Show2() {
   });
 }
 
-void Show1() {
+void Show1() {//Mostra numero 1
 
   cascade[2].set({
     0b00000000,
@@ -230,7 +240,7 @@ void Show1() {
     0b00000000,
   });
 }
-void ShowGo() {
+void ShowGo() {//Escreve GO na tela
 
 
   cascade[1].set({
@@ -298,7 +308,7 @@ void ShowGo() {
   });
 }
 
-void Show3() {
+void Show3() { //Mostra numero 3
   cascade[0].set({
     0b00000000,
     0b00000000,
@@ -406,7 +416,7 @@ void Show3() {
   });
 }
 
-void NerdyDerby() {
+void NerdyDerby() {//Escreve Nerdy Derby nas matrizes
   cascade[0].set({
     0b01111110,
     0b01111110,

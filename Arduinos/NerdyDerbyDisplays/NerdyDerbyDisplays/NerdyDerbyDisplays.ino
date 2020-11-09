@@ -1,27 +1,31 @@
-#include <SoftwareSerial.h>
-#include <SerialDisplay.h>
-#include <TM1637Display.h>
+//Autor: Nicolas de Castro Silva
+//Descrição: Código do Arduino que controla os displays na chegada do NerdyDerby, onde é exibido a posição e o tempo de cada carrinho
+//Materiais ultilizado: Arduino Uno, regulador 5v 1a, 3 Displays 7 seguimentos RoboCore, 3 displays de 4 digitos e 7 seguimentos
 
-TM1637Display displayTime3(9, 8);
-TM1637Display displayTime2(11, 10);
-TM1637Display displayTime1(13, 12);
+#include <SoftwareSerial.h> //Declaração da biblioteca para utilizar comunicação serial
+#include <SerialDisplay.h> //Biblicoteca para utilização dos displays da Robocore
+#include <TM1637Display.h> //Biblioteca para utilizaçãod os displays de 4 digitos
+
+TM1637Display displayTime3(9, 8);//Declaração das portas para os displays de 4 digitos
+TM1637Display displayTime2(11, 10);//Declaração das portas para os displays de 4 digitos
+TM1637Display displayTime1(13, 12);//Declaração das portas para os displays de 4 digitos
 
 SerialDisplay displaysPositions(7, 6, 3); // Dados, clock, numero de modulos
 
-SoftwareSerial mySerial(2, 3);
-String data = "";
+SoftwareSerial mySerial(2, 3); //Declaração das portas para utilização de comunicação serial
+String data = ""; //Variavel que armazena as mensagem recebidas por serial
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  mySerial.begin(9600);
-  displayTime1.setBrightness(5);
-  displayTime2.setBrightness(5);
-  displayTime3.setBrightness(5);
+  Serial.begin(9600); //Inicialização da comunicação Serial com o PC
+  mySerial.begin(9600); // Inicialização da comunicalçao Serial com o Arduino Central
+  displayTime1.setBrightness(5);//Controle de luminosidade do display de 4 digitos
+  displayTime2.setBrightness(5);//Controle de luminosidade do display de 4 digitos
+  displayTime3.setBrightness(5);//Controle de luminosidade do display de 4 digitos
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  //Repetição que recebe as mensagens pela comunicação Serial
   while (mySerial.available() > 0) {
     char character = mySerial.read();
     if (character != '\n') {
@@ -29,6 +33,8 @@ void loop() {
     }
     delay(10);
   }
+  
+  //Recebimento do resultado da corrida calculado pelo arduino central
   if (data.indexOf("result") != -1) { 
     Serial.println(data.substring(23, 27));
     ShowPosition(1, data[7]);
@@ -38,11 +44,11 @@ void loop() {
     ShowTime2(data.substring(18, 22).toInt());
     ShowTime3(data.substring(23, 27).toInt());
     data = "";
-  } else if (data.indexOf("reset") != -1) {
+  } else if (data.indexOf("reset") != -1) {//Limpeza dos displays
     Serial.println("Reset");
     ClearTimes();
     data = "";
-  } else if (data.indexOf("start") != -1) {
+  } else if (data.indexOf("start") != -1) {//Contagem regressiva no inicio da corrida
     Serial.println("Start");
     for (int i = 3; i >= 0 ; i--) {
       ShowPosition(1, i);
