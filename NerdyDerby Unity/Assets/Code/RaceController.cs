@@ -18,7 +18,6 @@ public class RaceController : MonoBehaviour
 {
     SerialPort arduino;
     private WebCamTexture backCam;
-    public InputField webCamIndex;
     public Image[] images;
     public Text[] names;
     public Button[] remove;
@@ -31,7 +30,6 @@ public class RaceController : MonoBehaviour
     public int timesRecived = 0;
     string message = "";
     public GameObject rankingPanel;
-    public InputField arduinoCOM;
 
     public GameObject positionPanel;
     public Text[] positionText;
@@ -44,7 +42,14 @@ public class RaceController : MonoBehaviour
     void Start()
     {
         racersTimes = new List<racerPosition>();
-        arduino = new SerialPort(arduinoCOM.text, 9600);
+        string arduinoCOM = PlayerPrefs.GetString("ArduinoCOM");
+        Debug.Log(arduinoCOM);
+
+        if (arduinoCOM == "")
+        {
+            Debug.Log("Invalid Arduino Port");
+        }
+        arduino = new SerialPort(arduinoCOM, 9600);
         arduino.ReadTimeout = 50;
         arduino.Open();
 
@@ -248,13 +253,11 @@ public class RaceController : MonoBehaviour
     private void OnEnable()
     {
         racers = new Dictionary<int, string>();
-        WebCamDevice[] devices = WebCamTexture.devices;
-        if (devices.Length == 0)
-        {
-            Debug.Log("No Camera Detected");
-            return;
-        }
-        backCam = new WebCamTexture(devices[int.Parse(webCamIndex.text)].name);
+
+
+        string webCamIndex = PlayerPrefs.GetString("webCamIndex");
+ 
+        backCam = new WebCamTexture(webCamIndex);
         if (backCam == null)
         {
             Debug.Log("Unable to find back camera");

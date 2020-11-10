@@ -9,6 +9,7 @@ public class ScreenManager : MonoBehaviour
     public GameObject RankingPanel;
     public GameObject RegisterPanel;
     public GameObject RacePanel;
+    public GameObject SettingsPanel;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,6 +24,16 @@ public class ScreenManager : MonoBehaviour
             ESC_Pressed();
         }
     }
+
+    public void OpenSetting()
+    {
+        SettingsPanel.SetActive(true);
+
+    }
+    public void  CloseSettings()
+    {
+        SettingsPanel.SetActive(false);
+    }   
 
     public void RacePanel_Click()
     {

@@ -112,6 +112,9 @@ void ReadSerial() {
       racing3 = false;
       timeTrack3 = -1;
     }
+  } else if (data.indexOf("TEST") != -1) {
+    delay(1000);
+    Serial.println  ("OK");
   }
   data = "";
 }

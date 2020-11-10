@@ -28,18 +28,8 @@ public class QRCodeController : MonoBehaviour
 
     void Start()
     {
-        WebCamDevice[] devices = WebCamTexture.devices;
-        defaultBackground = background.texture;
-
-        if (devices.Length == 0)
-        {
-            Debug.Log("No Camera Detected");
-            cameraAvailable = false;
-            return;
-        }
-
-        
-        backCam = new WebCamTexture(devices[int.Parse(webCamIndex.text)].name);
+        string webCamIndex = PlayerPrefs.GetString("webCamIndex");
+        backCam = new WebCamTexture(webCamIndex);
 
 
         if (backCam == null)
