@@ -26,18 +26,28 @@ public class QRCodeController : MonoBehaviour
     public Button RegisterButton;
     public InputField webCamIndex;
     public RectTransform mainPanel;
-    
+
 
     // Gerador de QR Codes https://qrexplore.com/generate/
     // Gerador de Nomes https://www.nomesdefantasia.com/surnames/short/
 
     void Start()
     {
+        takePictureButton.interactable = false;
+
+        //Setup files folder
+        if (!Directory.Exists("CarPics"))
+        {
+            Directory.CreateDirectory("CarPics");
+        }
+
+        //Config Arduino
         arduinoCOM = PlayerPrefs.GetString("ArduinoCOM");
         if (arduinoCOM == "")
         {
             Debug.Log("Invalid Arduino Port");
         }
+
         arduino = new SerialPort(arduinoCOM, 9600);
         arduino.ReadTimeout = 50;
         arduino.Open();
@@ -51,39 +61,27 @@ public class QRCodeController : MonoBehaviour
             Debug.Log("Can't open Arduino");
         }
 
+        //Config WebCam
         string webCamIndex = PlayerPrefs.GetString("webCamIndex");
         backCam = new WebCamTexture(webCamIndex);
-
         if (backCam == null)
         {
             Debug.Log("Unable to find back camera");
             return;
         }
         backCam.Play();
-        background.texture = backCam;
-        cameraAvailable = true;
-        if (!Directory.Exists("CarPics"))
-        {
-            Directory.CreateDirectory("CarPics");
-        }
+
+        //Start QRRead
         StartCoroutine(QRRead());
-        qrRoutine = true;
     }
 
     void Update()
     {
-
-        if (!qrRoutine)
-        {
-            backCam.Play();
-            StartCoroutine(QRRead());
-            qrRoutine = true;
-        }
-
-        if (!cameraAvailable)
+        if (!backCam.isPlaying)
         {
             return;
-        }
+        }      
+        background.texture = backCam;
         float ratio = (float)backCam.width / (float)backCam.height;
         fit.aspectRatio = ratio;
 
@@ -93,59 +91,130 @@ public class QRCodeController : MonoBehaviour
         int orient = -backCam.videoRotationAngle;
         background.rectTransform.localEulerAngles = new Vector3(0, 0, orient);
 
-        if (code.text == "Apresente o QRCode" || backCam.isPlaying || carName.text == "")
-        {
-            RegisterButton.interactable = false;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(mainPanel);
+
+    }
+
+    public void TakePicture_Click()
+    {
+        takePictureButton.interactable = false;
+        StopAllCoroutines();
+        StartCoroutine("MakeGif");
+        
+    }
+
+    public IEnumerator MakeGif()
+    {
+        TakePicture(0);
+        for (int i = 1; i < 24; i++)
+        {        
+            //arduino.Write("rotate");
+            string message = "ready";
+            while (message != "ready")
+            {
+                try
+                {
+                    //message = arduino.ReadLine();
+                }
+                catch (TimeoutException)
+                {
+
+                }
+                yield return new WaitForSeconds(1f);
+            }
+            TakePicture(i);
+            yield return new WaitForSeconds(1f);
         }
-        else
+        backCam.Stop();
+        if(carName.text != "")
         {
             RegisterButton.interactable = true;
         }
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(mainPanel);
+        takePictureButton.interactable = true;
+        StartCoroutine("ShowGif");
+        
     }
-    public void TakePicture_Click()
+
+    public IEnumerator ShowGif()
     {
-        StopAllCoroutines();
-        for (int i = 0; i < 24; i++)
-        {
-            
+        int i = 0;
+        while (true)
+        {       
+            string path = code.text + i.ToString();
+            ReadImage(path);
+            yield return new WaitForSeconds(0.1f);
+            i++;
+            i = i % 24;
         }
-        arduino.Write("rotate");
+}
 
+    void ReadImage(string path)
+    {
 
-
-
-        backCam.Stop();
+            AspectRatioFitter arf = background.gameObject.GetComponent<AspectRatioFitter>();
+            byte[] file = File.ReadAllBytes("CarPics/" + path + ".png");
+            Texture2D img = new Texture2D(backCam.width, backCam.height);
+            img.LoadImage(file);
+            background.texture = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)).texture;
+            float ratio = (float)backCam.width / (float)backCam.height;
+            arf.aspectRatio = ratio;
+      
     }
+
+
     public void Register_Click()
     {
+        StopAllCoroutines();
         StartCoroutine(Register());
     }
-    public IEnumerator Register()
+
+    void TakePicture(int index)
     {
+        //Convert to PNG
         Texture2D tex = ToTexture2D(backCam);
-        FileStream file = File.Open("CarPics/" + code.text + ".png", FileMode.Create);
+        FileStream file = File.Open("CarPics/" + code.text + index.ToString() + ".png", FileMode.Create);
         BinaryWriter binary = new BinaryWriter(file);
         byte[] img = tex.EncodeToPNG();
         binary.Write(img);
         file.Close();
-        yield return new WaitForEndOfFrame();
+    }
 
-        file = File.Open("CarPics/" + code.text + ".txt", FileMode.Create);
-        binary = new BinaryWriter(file);
+    public void Name_change()
+    {
+
+        if(carName.text != "" && !backCam.isPlaying)
+        {
+            RegisterButton.interactable = true;
+        }
+        else
+        {
+            RegisterButton.interactable = false;
+        }
+
+    }
+
+
+    public IEnumerator Register()
+    {
+
+        //Save File
+        FileStream file = File.Open("CarPics/" + code.text + ".txt", FileMode.Create);
+        BinaryWriter binary = new BinaryWriter(file);
         byte[] name = System.Text.Encoding.UTF8.GetBytes(carName.text);
         binary.Write(name);
         file.Close();
 
+        yield return new WaitForEndOfFrame();
 
         takePictureButton.interactable = false;
+        RegisterButton.interactable = false;
         code.text = "Apresente o QRCode";
         carName.text = "";
         backCam.Play();
         StartCoroutine(QRRead());
 
     }
+
     public Texture2D ToTexture2D(Texture texture)
     {
 
@@ -179,16 +248,19 @@ public class QRCodeController : MonoBehaviour
         code.text = result.Text;
         takePictureButton.interactable = true;
         Debug.Log("DECODED TEXT FROM QR: " + result.Text);
+
+        takePictureButton.interactable = true;
+
     }
 
     private void OnDisable()
     {
         code.text = "Show QRCode in the Camera";
         takePictureButton.interactable = false;
+        RegisterButton.interactable = false;
         StopAllCoroutines();
         backCam.Stop();
         Debug.Log("Disable");
-        qrRoutine = false;
     }
 }
 
