@@ -24,8 +24,6 @@ public class FadeOut : MonoBehaviour
     void Update()
     {
 
-
-
     }
 
     private IEnumerator myFadeOut()
@@ -46,8 +44,6 @@ public class FadeOut : MonoBehaviour
         curColor.a = 0;
         this.image.color = curColor;
         yield return new WaitForSeconds(1f);
-        
-
-
+       
     }
 }
