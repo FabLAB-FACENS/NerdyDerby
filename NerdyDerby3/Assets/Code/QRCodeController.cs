@@ -80,7 +80,7 @@ public class QRCodeController : MonoBehaviour
         if (!backCam.isPlaying)
         {
             return;
-        }      
+        }
         background.texture = backCam;
         float ratio = (float)backCam.width / (float)backCam.height;
         fit.aspectRatio = ratio;
@@ -100,14 +100,14 @@ public class QRCodeController : MonoBehaviour
         takePictureButton.interactable = false;
         StopAllCoroutines();
         StartCoroutine("MakeGif");
-        
+
     }
 
     public IEnumerator MakeGif()
     {
         TakePicture(0);
         for (int i = 1; i < 24; i++)
-        {        
+        {
             //arduino.Write("rotate");
             string message = "ready";
             while (message != "ready")
@@ -126,39 +126,37 @@ public class QRCodeController : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
         backCam.Stop();
-        if(carName.text != "")
+        if (carName.text != "")
         {
             RegisterButton.interactable = true;
         }
         takePictureButton.interactable = true;
         StartCoroutine("ShowGif");
-        
+
     }
 
     public IEnumerator ShowGif()
     {
         int i = 0;
         while (true)
-        {       
+        {
             string path = code.text + i.ToString();
             ReadImage(path);
             yield return new WaitForSeconds(0.1f);
             i++;
             i = i % 24;
         }
-}
+    }
 
     void ReadImage(string path)
     {
-
-            AspectRatioFitter arf = background.gameObject.GetComponent<AspectRatioFitter>();
-            byte[] file = File.ReadAllBytes("CarPics/" + path + ".png");
-            Texture2D img = new Texture2D(backCam.width, backCam.height);
-            img.LoadImage(file);
-            background.texture = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)).texture;
-            float ratio = (float)backCam.width / (float)backCam.height;
-            arf.aspectRatio = ratio;
-      
+        AspectRatioFitter arf = background.gameObject.GetComponent<AspectRatioFitter>();
+        byte[] file = File.ReadAllBytes("CarPics/" + path + "/" + path + ".png");
+        Texture2D img = new Texture2D(backCam.width, backCam.height);
+        img.LoadImage(file);
+        background.texture = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)).texture;
+        float ratio = (float)backCam.width / (float)backCam.height;
+        arf.aspectRatio = ratio;
     }
 
 
@@ -172,7 +170,8 @@ public class QRCodeController : MonoBehaviour
     {
         //Convert to PNG
         Texture2D tex = ToTexture2D(backCam);
-        FileStream file = File.Open("CarPics/" + code.text + index.ToString() + ".png", FileMode.Create);
+        Directory.CreateDirectory("CarPics/" + code.text);
+        FileStream file = File.Open("CarPics/" + code.text + "/" + code.text + index.ToString() + ".png", FileMode.Create);
         BinaryWriter binary = new BinaryWriter(file);
         byte[] img = tex.EncodeToPNG();
         binary.Write(img);
@@ -182,7 +181,7 @@ public class QRCodeController : MonoBehaviour
     public void Name_change()
     {
 
-        if(carName.text != "" && !backCam.isPlaying)
+        if (carName.text != "" && !backCam.isPlaying)
         {
             RegisterButton.interactable = true;
         }
@@ -190,15 +189,12 @@ public class QRCodeController : MonoBehaviour
         {
             RegisterButton.interactable = false;
         }
-
     }
-
-
     public IEnumerator Register()
     {
 
         //Save File
-        FileStream file = File.Open("CarPics/" + code.text + ".txt", FileMode.Create);
+        FileStream file = File.Open("CarPics/" + code.text + "/" + code.text + ".txt", FileMode.Create);
         BinaryWriter binary = new BinaryWriter(file);
         byte[] name = System.Text.Encoding.UTF8.GetBytes(carName.text);
         binary.Write(name);
@@ -237,7 +233,8 @@ public class QRCodeController : MonoBehaviour
         {
             result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
             //Debug.Log("Not Found");
-            if (result != null && File.Exists("CarPics/" + result.Text + ".png"))
+            
+            if (result != null && Directory.Exists("CarPics/" + result.Text))
             {
                 code.text = "Carro já cadastrado";
                 Debug.Log("Car already exisits");

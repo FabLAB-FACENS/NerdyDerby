@@ -76,7 +76,7 @@ public class RaceController : MonoBehaviour
                 result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
                 if (result != null)
                 {
-                    if (!File.Exists("CarPics/" + result.Text + ".png"))
+                    if (!File.Exists("CarPics/" + result.Text + "/" + result.Text + ".png"))
                     {
                         popUp.SetActive(true);
                         popUp.GetComponentInChildren<Text>().text = "Racer not registred";
@@ -198,7 +198,7 @@ public class RaceController : MonoBehaviour
     void ReadImage(string path, int track)
     {
         AspectRatioFitter arf = images[track].gameObject.GetComponent<AspectRatioFitter>();
-        byte[] file = File.ReadAllBytes("CarPics/" + path + ".png");
+        byte[] file = File.ReadAllBytes("CarPics/" + path + "/" + path + ".png");
         Texture2D img = new Texture2D(backCam.width, backCam.height);
         img.LoadImage(file);
         images[track].sprite = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f));
@@ -208,7 +208,7 @@ public class RaceController : MonoBehaviour
     }
     void ReadRacerName(string path, Text destiny)
     {
-        StreamReader stream = new StreamReader("CarPics/" + path + ".txt");
+        StreamReader stream = new StreamReader("CarPics/" + path + "/" + path + ".txt");
         string text = stream.ReadToEnd();
         String[] texts = text.Split(',');
         destiny.text = texts[0];
@@ -297,7 +297,7 @@ public class RaceController : MonoBehaviour
             racers.TryGetValue(track, out string path);
             Debug.Log("Saving " + time + " in " + path);
             string text = "," + time.ToString();
-            StreamWriter file = new StreamWriter("CarPics/" + path + ".txt", true);
+            StreamWriter file = new StreamWriter("CarPics/" + path + "/" + path + ".txt", true);
             file.WriteAsync("," + time.ToString());
             file.Flush();
             file.Dispose();
