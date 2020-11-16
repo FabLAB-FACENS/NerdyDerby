@@ -260,6 +260,7 @@ public class QRCodeController : MonoBehaviour
         RegisterButton.interactable = false;
         StopAllCoroutines();
         backCam.Stop();
+        arduino.Close();
         Debug.Log("Disable");
     }
 }
