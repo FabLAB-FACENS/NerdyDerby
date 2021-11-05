@@ -8,6 +8,7 @@ using System.IO.Ports;
 using UnityEngine.UI;
 using System;
 
+
 public class racerPosition
 {
     public int track;
@@ -34,6 +35,7 @@ public class RaceController : MonoBehaviour
     public GameObject positionPanel;
     public Text[] positionText;
     public Text[] timesText;
+    public Dictionary<int, Coroutine> trackGif;
     List<racerPosition> racersTimes;
 
 
@@ -41,6 +43,7 @@ public class RaceController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        trackGif = new Dictionary<int, Coroutine>();
         racersTimes = new List<racerPosition>();
         string arduinoCOM = PlayerPrefs.GetString("ArduinoCOM");
         Debug.Log(arduinoCOM);
@@ -76,7 +79,7 @@ public class RaceController : MonoBehaviour
                 result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
                 if (result != null)
                 {
-                    if (!File.Exists("CarPics/" + result.Text + "/" + result.Text + ".png"))
+                    if (!File.Exists("CarPics/" + result.Text + "/" + result.Text + "0.png"))
                     {
                         popUp.SetActive(true);
                         popUp.GetComponentInChildren<Text>().text = "Racer not registred";
@@ -195,15 +198,46 @@ public class RaceController : MonoBehaviour
         }
 
     }
-    void ReadImage(string path, int track)
+    IEnumerator ReadImage(string path, int track)
     {
-        AspectRatioFitter arf = images[track].gameObject.GetComponent<AspectRatioFitter>();
-        byte[] file = File.ReadAllBytes("CarPics/" + path + "/" + path + ".png");
-        Texture2D img = new Texture2D(backCam.width, backCam.height);
-        img.LoadImage(file);
-        images[track].sprite = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f));
-        float ratio = (float)backCam.width / (float)backCam.height;
-        arf.aspectRatio = ratio;
+        int cont = 0;
+        AspectRatioFitter arf;
+        byte[] file;
+        Texture2D img;
+        float ratio;
+
+        List<Sprite> gif = new List<Sprite>();
+
+
+        for (int i = 0; i < 24; i++)
+        {
+            
+            Debug.Log(path + " " + track);
+            arf = images[track].gameObject.GetComponent<AspectRatioFitter>();
+            file = File.ReadAllBytes("CarPics/" + path + "/" + path + i + ".png");
+            img = new Texture2D(backCam.width, backCam.height);
+            img.LoadImage(file);
+            gif.Add(Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)));
+            ratio = (float)backCam.width / (float)backCam.height;
+            arf.aspectRatio = ratio;
+
+        }
+
+        while (true)
+        {
+            images[track].sprite = gif[cont];
+            if (cont == 23)
+            {
+                cont = 0;
+            }
+            else
+            {
+                cont++;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+        
+
 
     }
     void ReadRacerName(string path, Text destiny)
@@ -241,7 +275,7 @@ public class RaceController : MonoBehaviour
         {
             track++;
         }
-        ReadImage(result.Text, track);
+        trackGif.Add(track, StartCoroutine(ReadImage(result.Text, track)));
         ReadRacerName(result.Text, names[track]);
         racers.Add(track, result.Text);
         racerButton.interactable = true;
@@ -256,7 +290,7 @@ public class RaceController : MonoBehaviour
 
 
         string webCamIndex = PlayerPrefs.GetString("webCamIndex");
- 
+
         backCam = new WebCamTexture(webCamIndex);
         if (backCam == null)
         {
@@ -279,15 +313,30 @@ public class RaceController : MonoBehaviour
         racers.Clear();
         backCam.Stop();
         StopAllCoroutines();
+
     }
+
+
     public void RemoveRacer(int track)
     {
+        Coroutine aux;
+        if (trackGif.TryGetValue(track, out aux))
+        {
+            StopCoroutine(trackGif[track]);
+            trackGif.Remove(track);
+            
+        }
+        trackGif.Clear();
         names[track].text = "Waiting Racer";
         remove[track].interactable = false;
+        trackGif.Remove(track);
         images[track].sprite = placeholder;
         float ratio = (float)placeholder.rect.width / (float)placeholder.rect.height;
         images[track].GetComponent<AspectRatioFitter>().aspectRatio = ratio;
         arduino.Write("rmv" + track);
+        Resources.UnloadUnusedAssets();
+        GC.Collect();
+
     }
 
     void SaveTime(int track, int time)
@@ -325,7 +374,7 @@ public class RaceController : MonoBehaviour
         {
             yield return new WaitForSeconds(0.1f);
         }
-        
+
         positionPanel.SetActive(false);
         for (int i = 0; i < positionText.Length; i++)
         {

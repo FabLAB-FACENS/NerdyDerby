@@ -69,10 +69,8 @@ public class QRCodeController : MonoBehaviour
             Debug.Log("Unable to find back camera");
             return;
         }
-        backCam.Play();
 
-        //Start QRRead
-        StartCoroutine(QRRead());
+
     }
 
     void Update()
@@ -129,8 +127,9 @@ public class QRCodeController : MonoBehaviour
         if (carName.text != "")
         {
             RegisterButton.interactable = true;
+            takePictureButton.interactable = false;
         }
-        takePictureButton.interactable = true;
+        //takePictureButton.interactable = true;
         StartCoroutine("ShowGif");
 
     }
@@ -140,18 +139,19 @@ public class QRCodeController : MonoBehaviour
         int i = 0;
         while (true)
         {
-            string path = code.text + i.ToString();
-            ReadImage(path);
+            string name = code.text + i.ToString();
+            string path = code.text;
+            ReadImage(path, name);
             yield return new WaitForSeconds(0.1f);
             i++;
             i = i % 24;
         }
     }
 
-    void ReadImage(string path)
+    void ReadImage(string path, string name)
     {
         AspectRatioFitter arf = background.gameObject.GetComponent<AspectRatioFitter>();
-        byte[] file = File.ReadAllBytes("CarPics/" + path + "/" + path + ".png");
+        byte[] file = File.ReadAllBytes("CarPics/" + path + "/" + name + ".png");
         Texture2D img = new Texture2D(backCam.width, backCam.height);
         img.LoadImage(file);
         background.texture = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)).texture;
@@ -164,6 +164,9 @@ public class QRCodeController : MonoBehaviour
     {
         StopAllCoroutines();
         StartCoroutine(Register());
+
+        backCam.Play();
+        StartCoroutine(QRRead());
     }
 
     void TakePicture(int index)
@@ -206,8 +209,8 @@ public class QRCodeController : MonoBehaviour
         RegisterButton.interactable = false;
         code.text = "Apresente o QRCode";
         carName.text = "";
-        backCam.Play();
-        StartCoroutine(QRRead());
+        Resources.UnloadUnusedAssets();
+        GC.Collect();
 
     }
 
@@ -233,10 +236,10 @@ public class QRCodeController : MonoBehaviour
         {
             result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
             //Debug.Log("Not Found");
-            
+
             if (result != null && Directory.Exists("CarPics/" + result.Text))
             {
-                code.text = "Carro já cadastrado";
+                code.text = "Carro cadastrado";
                 Debug.Log("Car already exisits");
                 result = null;
             }
@@ -259,6 +262,20 @@ public class QRCodeController : MonoBehaviour
         backCam.Stop();
         arduino.Close();
         Debug.Log("Disable");
+    }
+
+    IEnumerator CameraPlay()
+    {
+        yield return new WaitForSeconds(0.2f);
+        backCam.Play();
+
+        StartCoroutine(QRRead());
+        yield return null;
+    }
+    private void OnEnable()
+    {
+        StartCoroutine(CameraPlay());
+
     }
 }
 

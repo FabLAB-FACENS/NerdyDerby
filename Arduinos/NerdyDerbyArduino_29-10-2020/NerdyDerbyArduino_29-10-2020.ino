@@ -70,6 +70,7 @@ void ReadSerial() {
   }
   //Função que inicia a corrida
   if (data.indexOf("RACE") != -1) {
+    //Serial.println("Race Start");
     StartRace();
   } else if (data.indexOf("STOP") != -1) {//Função que para a corrida
     //Serial.println("Race Stop");
