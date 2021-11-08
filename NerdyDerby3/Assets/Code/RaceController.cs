@@ -45,7 +45,7 @@ public class RaceController : MonoBehaviour
     {
         trackGif = new Dictionary<int, Coroutine>();
         racersTimes = new List<racerPosition>();
-        string arduinoCOM = PlayerPrefs.GetString("ArduinoCOM");
+        string arduinoCOM = PlayerPrefs.GetString("PistaArduinoCOM");
         Debug.Log(arduinoCOM);
 
         if (arduinoCOM == "")

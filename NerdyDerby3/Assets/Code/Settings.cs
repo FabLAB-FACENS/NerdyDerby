@@ -11,12 +11,15 @@ public class Settings : MonoBehaviour
     WebCamDevice[] webcams;
     List<String> COMPorts;
     List<String> webcamsList;
-    public Dropdown COMPortsDropDown;
+    public Dropdown PistaCOMPortsDropDown;//Arduino Pista
+    public Dropdown RegistroCOMPortsDropDown;//Arduino Regristro
     public Dropdown webcamDropDown;
-    SerialPort arduino;
+    SerialPort arduinoPista;
+    SerialPort arduinoRegistro;
     public Sprite OKSprite;
     public Sprite NotOKSprite;
-    public Image arduinoStatusImage;
+    public Image arduinoPistaStatusImage;
+    public Image arduinoRegistroStatusImage;
     public Image webcamStatusImage;
     public WebCamTexture backCam;
     // Start is called before the first frame update
@@ -82,7 +85,8 @@ public class Settings : MonoBehaviour
     {
         COMPorts = new List<string>();
         string[] aux = SerialPort.GetPortNames();
-        COMPorts.Add(PlayerPrefs.GetString("ArduinoCOM"));
+        COMPorts.Add(PlayerPrefs.GetString("ArduinoCOMRegistro"));
+        COMPorts.Add(PlayerPrefs.GetString("ArduinoCOMPista"));
         foreach (string item in aux)
         {
             if(!COMPorts.Contains(item))
@@ -91,29 +95,35 @@ public class Settings : MonoBehaviour
             }
             
         }
-        COMPortsDropDown.ClearOptions();
-        COMPortsDropDown.AddOptions(COMPorts);
-        ArduinoCOM_Change();
+        PistaCOMPortsDropDown.ClearOptions();
+        PistaCOMPortsDropDown.AddOptions(COMPorts);
+        RegistroCOMPortsDropDown.ClearOptions();
+        RegistroCOMPortsDropDown.AddOptions(COMPorts);
+        PistaArduinoCOM_Change();
+        RegistroArduinoCOM_Change();
     }
 
-    public void ArduinoCOM_Change()
+    public void PistaArduinoCOM_Change()
     {
-        StartCoroutine("ArduinoCOMTest");
+        StartCoroutine("PistaArduinoCOMTest");
+    }
+    public void RegistroArduinoCOM_Change()
+    {
+        StartCoroutine("RegistroArduinoCOMTest");
     }
 
-    IEnumerator ArduinoCOMTest()
+    IEnumerator PistaArduinoCOMTest()
     {
-        arduinoStatusImage.sprite = null;
-        arduinoStatusImage.color = Color.clear;
+        arduinoPistaStatusImage.sprite = null;
+        arduinoPistaStatusImage.color = Color.clear;
         bool isConnected = false;
         try
         {
-            arduino = new SerialPort(COMPortsDropDown.options[COMPortsDropDown.value].text, 9600);
-            arduino.ReadTimeout = 50;
-            arduino.Open();
+            arduinoPista = new SerialPort(PistaCOMPortsDropDown.options[PistaCOMPortsDropDown.value].text, 9600);
+            arduinoPista.ReadTimeout = 50;
+            arduinoPista.Open();
             isConnected = true;
             Debug.Log("Connected to something");
-
         }
         catch (Exception ex)
         {
@@ -128,10 +138,10 @@ public class Settings : MonoBehaviour
             string message = "";
             for (int i = 0; i < 10; i++)
             {
-                arduino.Write("TEST");
+                arduinoPista.Write("TEST");
                 try
                 {
-                    message = arduino.ReadLine();
+                    message = arduinoPista.ReadLine();
                 }
                 catch (TimeoutException) { }
 
@@ -150,23 +160,92 @@ public class Settings : MonoBehaviour
             if (message.Contains("OK"))
             {
                 Debug.Log("arduino OK");
-                arduinoStatusImage.sprite = OKSprite;
-                arduinoStatusImage.color = Color.green;
-                PlayerPrefs.SetString("ArduinoCOM", COMPortsDropDown.options[COMPortsDropDown.value].text);
+                arduinoPistaStatusImage.sprite = OKSprite;
+                arduinoPistaStatusImage.color = Color.green;
+                PlayerPrefs.SetString("ArduinoCOMPista", PistaCOMPortsDropDown.options[PistaCOMPortsDropDown.value].text);
             }
             else
             {
                 Debug.Log("Not Connected");
-                arduinoStatusImage.sprite = NotOKSprite;
-                arduinoStatusImage.color = Color.red;
+                arduinoPistaStatusImage.sprite = NotOKSprite;
+                arduinoPistaStatusImage.color = Color.red;
             }
         }
         else
         {
             Debug.Log("Not Connected");
-            arduinoStatusImage.sprite = NotOKSprite;
-            arduinoStatusImage.color = Color.red;
+            arduinoPistaStatusImage.sprite = NotOKSprite;
+            arduinoPistaStatusImage.color = Color.red;
         }
-        arduino.Close();
+        arduinoPista.Close();
+    }
+
+    IEnumerator RegistroArduinoCOMTest()
+    {
+        arduinoRegistroStatusImage.sprite = null;
+        arduinoRegistroStatusImage.color = Color.clear;
+        bool isConnected = false;
+        try
+        {
+            arduinoRegistro = new SerialPort(RegistroCOMPortsDropDown.options[RegistroCOMPortsDropDown.value].text, 9600);
+            arduinoRegistro.ReadTimeout = 50;
+            arduinoRegistro.Open();
+            isConnected = true;
+            Debug.Log("Connected to something");
+
+        }
+        catch (Exception ex)
+        {
+            Debug.Log(ex);
+
+        }
+
+        if (isConnected)
+        {
+            Debug.Log("Testing Arduino");
+            //yield return new WaitForSeconds(1f);
+            string message = "";
+            for (int i = 0; i < 10; i++)
+            {
+                arduinoRegistro.Write("TEST");
+                try
+                {
+                    message = arduinoRegistro.ReadLine();
+                }
+                catch (TimeoutException) { }
+
+                if (message != "")
+                {
+                    Debug.Log(message);
+                    break;
+                }
+                else
+                {
+                    Debug.Log("NADA");
+                }
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            if (message.Contains("OK"))
+            {
+                Debug.Log("arduino OK");
+                arduinoRegistroStatusImage.sprite = OKSprite;
+                arduinoRegistroStatusImage.color = Color.green;
+                PlayerPrefs.SetString("ArduinoCOMRegistro", RegistroCOMPortsDropDown.options[RegistroCOMPortsDropDown.value].text);
+            }
+            else
+            {
+                Debug.Log("Not Connected");
+                arduinoRegistroStatusImage.sprite = NotOKSprite;
+                arduinoRegistroStatusImage.color = Color.red;
+            }
+        }
+        else
+        {
+            Debug.Log("Not Connected");
+            arduinoRegistroStatusImage.sprite = NotOKSprite;
+            arduinoRegistroStatusImage.color = Color.red;
+        }
+        arduinoRegistro.Close();
     }
 }

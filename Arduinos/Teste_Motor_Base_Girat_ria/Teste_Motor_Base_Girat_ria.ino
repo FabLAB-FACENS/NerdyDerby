@@ -80,7 +80,7 @@ void loop()
 void full()
 {
   PPR = 200;
-  temp = 100;
+  temp = 50;
   Serial.println("Modo Passo Completo (Full - Step)");
   digitalWrite(MS1, LOW);
   digitalWrite(MS2, LOW);
@@ -89,7 +89,7 @@ void full()
 void half()
 {
   PPR = 400;
-  temp = 50;
+  temp = 25;
   Serial.println("Modo Meio Passo(Half - Step)");
   digitalWrite(MS1, HIGH);
   digitalWrite(MS2, LOW);

@@ -42,15 +42,19 @@ public class QRCodeController : MonoBehaviour
         }
 
         //Config Arduino
-        arduinoCOM = PlayerPrefs.GetString("ArduinoCOM");
+        arduinoCOM = PlayerPrefs.GetString("ArduinoCOMRegistro");
         if (arduinoCOM == "")
         {
             Debug.Log("Invalid Arduino Port");
         }
+        else
+        {
+            arduino = new SerialPort(arduinoCOM, 9600);
+            arduino.ReadTimeout = 50;
+            arduino.Open();
+        }
 
-        arduino = new SerialPort(arduinoCOM, 9600);
-        arduino.ReadTimeout = 50;
-        arduino.Open();
+
 
         if (arduino.IsOpen)
         {
@@ -69,7 +73,7 @@ public class QRCodeController : MonoBehaviour
             Debug.Log("Unable to find back camera");
             return;
         }
-
+        backCam.Play();
 
     }
 
@@ -97,7 +101,9 @@ public class QRCodeController : MonoBehaviour
     {
         takePictureButton.interactable = false;
         StopAllCoroutines();
+        arduino.Write("voltah");
         StartCoroutine("MakeGif");
+        
 
     }
 
