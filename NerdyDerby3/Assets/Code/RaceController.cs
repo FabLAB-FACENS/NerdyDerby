@@ -45,7 +45,7 @@ public class RaceController : MonoBehaviour
     {
         trackGif = new Dictionary<int, Coroutine>();
         racersTimes = new List<racerPosition>();
-        string arduinoCOM = PlayerPrefs.GetString("PistaArduinoCOM");
+        string arduinoCOM = PlayerPrefs.GetString("ArduinoCOMPista");
         Debug.Log(arduinoCOM);
 
         if (arduinoCOM == "")
@@ -209,7 +209,7 @@ public class RaceController : MonoBehaviour
         List<Sprite> gif = new List<Sprite>();
 
 
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i < 23; i++)
         {
             
             Debug.Log(path + " " + track);
@@ -226,7 +226,7 @@ public class RaceController : MonoBehaviour
         while (true)
         {
             images[track].sprite = gif[cont];
-            if (cont == 23)
+            if (cont == 22)
             {
                 cont = 0;
             }

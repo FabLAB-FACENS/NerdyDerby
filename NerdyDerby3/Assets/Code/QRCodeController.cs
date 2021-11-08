@@ -103,31 +103,17 @@ public class QRCodeController : MonoBehaviour
         StopAllCoroutines();
         arduino.Write("voltah");
         StartCoroutine("MakeGif");
-        
-
+       
     }
 
     public IEnumerator MakeGif()
     {
-        TakePicture(0);
-        for (int i = 1; i < 24; i++)
+        
+        for (int i = 0; i < 23; i++)
         {
-            //arduino.Write("rotate");
-            string message = "ready";
-            while (message != "ready")
-            {
-                try
-                {
-                    //message = arduino.ReadLine();
-                }
-                catch (TimeoutException)
-                {
-
-                }
-                yield return new WaitForSeconds(0.5f);
-            }
-            TakePicture(i);
             yield return new WaitForSeconds(0.5f);
+            TakePicture(i);
+            
         }
         backCam.Stop();
         if (carName.text != "")
@@ -150,7 +136,7 @@ public class QRCodeController : MonoBehaviour
             ReadImage(path, name);
             yield return new WaitForSeconds(0.1f);
             i++;
-            i = i % 24;
+            i = i % 23;
         }
     }
 
@@ -264,23 +250,29 @@ public class QRCodeController : MonoBehaviour
         code.text = "Show QRCode in the Camera";
         takePictureButton.interactable = false;
         RegisterButton.interactable = false;
+        
         StopAllCoroutines();
         backCam.Stop();
         arduino.Close();
         Debug.Log("Disable");
     }
 
-    IEnumerator CameraPlay()
+    IEnumerator Restart()
     {
         yield return new WaitForSeconds(0.2f);
         backCam.Play();
 
+        arduino = new SerialPort(arduinoCOM, 9600);
+        arduino.ReadTimeout = 50;
+        arduino.Open();
+
         StartCoroutine(QRRead());
-        yield return null;
+        
     }
     private void OnEnable()
     {
-        StartCoroutine(CameraPlay());
+        StartCoroutine(Restart());
+
 
     }
 }

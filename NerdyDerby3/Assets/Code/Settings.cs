@@ -9,7 +9,8 @@ using System.IO.Ports;
 public class Settings : MonoBehaviour
 {
     WebCamDevice[] webcams;
-    List<String> COMPorts;
+    List<String> COMPortsPista;
+    List<String> COMPortsRegistro;
     List<String> webcamsList;
     public Dropdown PistaCOMPortsDropDown;//Arduino Pista
     public Dropdown RegistroCOMPortsDropDown;//Arduino Regristro
@@ -83,22 +84,29 @@ public class Settings : MonoBehaviour
 
     void LoadCOM()
     {
-        COMPorts = new List<string>();
+        COMPortsPista = new List<string>();
+        COMPortsRegistro = new List<string>();
         string[] aux = SerialPort.GetPortNames();
-        COMPorts.Add(PlayerPrefs.GetString("ArduinoCOMRegistro"));
-        COMPorts.Add(PlayerPrefs.GetString("ArduinoCOMPista"));
+        COMPortsRegistro.Add(PlayerPrefs.GetString("ArduinoCOMRegistro"));
+        COMPortsPista.Add(PlayerPrefs.GetString("ArduinoCOMPista"));
         foreach (string item in aux)
         {
-            if(!COMPorts.Contains(item))
+            if(!COMPortsRegistro.Contains(item))
             {
-                COMPorts.Add(item);
+                COMPortsRegistro.Add(item);
             }
-            
+        }
+        foreach (string item in aux)
+        {
+            if (!COMPortsPista.Contains(item))
+            {
+                COMPortsPista.Add(item);
+            }
         }
         PistaCOMPortsDropDown.ClearOptions();
-        PistaCOMPortsDropDown.AddOptions(COMPorts);
+        PistaCOMPortsDropDown.AddOptions(COMPortsPista);
         RegistroCOMPortsDropDown.ClearOptions();
-        RegistroCOMPortsDropDown.AddOptions(COMPorts);
+        RegistroCOMPortsDropDown.AddOptions(COMPortsRegistro);
         PistaArduinoCOM_Change();
         RegistroArduinoCOM_Change();
     }
@@ -128,7 +136,6 @@ public class Settings : MonoBehaviour
         catch (Exception ex)
         {
             Debug.Log(ex);
-
         }
 
         if (isConnected)
