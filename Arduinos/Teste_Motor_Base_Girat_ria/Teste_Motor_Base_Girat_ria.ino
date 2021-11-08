@@ -75,6 +75,7 @@ void loop()
     Serial.println("Desligar Sleep");
     Sleepoff();
   }
+  data = "";
 
 }
 void full()
