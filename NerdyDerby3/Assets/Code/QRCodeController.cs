@@ -118,10 +118,10 @@ public class QRCodeController : MonoBehaviour
                 {
 
                 }
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.5f);
             }
             TakePicture(i);
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.5f);
         }
         backCam.Stop();
         if (carName.text != "")

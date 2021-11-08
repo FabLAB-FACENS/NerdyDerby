@@ -41,6 +41,18 @@ int timepista2;//Tempo da pista2
 int timepista3;//Tempo da pista3
 
 void setup() {
+  pinMode(ENA, OUTPUT);
+  pinMode(MS1, OUTPUT);
+  pinMode(MS2, OUTPUT);
+  pinMode(MS3, OUTPUT);
+  pinMode(STP, OUTPUT);
+  pinMode(DIR, OUTPUT);
+  digitalWrite(SLP, LOW);   // Sleep desabilitado
+  digitalWrite(DIR, HIGH);  // Sentido Horário habilitado
+  digitalWrite(RST, HIGH);  // RST habilitado
+
+
+
   placar.begin(9600);//Inicializa a comunicação serial com o arduino do placar(chegada)
   contagem.begin(9600);//Inicializa a comunicação serial com o arduino da contagem(largada)
   Serial.begin(9600);//Inicializa a comunicação serial com o PC
@@ -117,6 +129,7 @@ void ReadSerial() {
     delay(1000);
     Serial.println  ("OK");
   }
+
   data = "";
 }
 
