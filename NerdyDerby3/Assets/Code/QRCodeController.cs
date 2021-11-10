@@ -42,62 +42,23 @@ public class QRCodeController : MonoBehaviour
             Directory.CreateDirectory("CarPics");
         }
 
+        StartCoroutine(StartArduinoCOM());
+
         //Config Arduino
-        arduinoCOM = PlayerPrefs.GetString("ArduinoCOMRegistro");
-        if (arduinoCOM == "")
-        {
-            Debug.Log("Invalid Arduino Port");
-        }
-        else
-        {
-            arduino = new SerialPort(arduinoCOM, 9600);
-            arduino.ReadTimeout = 50;
-            arduino.Open();
-        }
 
-
-
-        if (arduino.IsOpen)
-        {
-            Debug.Log("arduino OK");
-        }
-        else
-        {
-            Debug.Log("Can't open Arduino");
-        }
-
+        //StartCoroutine(StartWebCam());
         //Config WebCam
         string webCamIndex = PlayerPrefs.GetString("webCamIndex");
         backCam = new WebCamTexture(webCamIndex);
-        if (backCam == null)
-        {
-            Debug.Log("Unable to find back camera");
-            return;
-        }
-        backCam.Play();
+
 
     }
 
     void Update()
     {
-        if (!backCam.isPlaying)
-        {
-            return;
-        }
-        background.texture = backCam;
-        float ratio = (float)backCam.width / (float)backCam.height;
-        fit.aspectRatio = ratio;
 
-        float scaleY = backCam.videoVerticallyMirrored ? -1f : 1f;
-        background.rectTransform.localScale = new Vector3(1f, scaleY, 1f);
-
-        int orient = -backCam.videoRotationAngle;
-        background.rectTransform.localEulerAngles = new Vector3(0, 0, orient);
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(mainPanel);
 
     }
-
     public void TakePicture_Click()
     {
         Directory.CreateDirectory("CarPics/" + code.text);
@@ -109,14 +70,9 @@ public class QRCodeController : MonoBehaviour
 
         takePictureButton.interactable = false;
         StopAllCoroutines();
-        try
-        {
-            arduino.Write("voltah");
-        }
-        catch (Exception e)
-        {
 
-        }
+        StartCoroutine(SendMessageToArduino());
+
 
         StartCoroutine("MakeGif");
 
@@ -163,6 +119,8 @@ public class QRCodeController : MonoBehaviour
         background.texture = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)).texture;
         float ratio = (float)backCam.width / (float)backCam.height;
         arf.aspectRatio = ratio;
+        Resources.UnloadUnusedAssets();
+        GC.Collect();
     }
 
 
@@ -172,7 +130,7 @@ public class QRCodeController : MonoBehaviour
         StartCoroutine(Register());
 
         backCam.Play();
-        StartCoroutine(QRRead());
+        StartCoroutine(StartWebCam());
     }
 
     void TakePicture(int index)
@@ -202,21 +160,16 @@ public class QRCodeController : MonoBehaviour
     public IEnumerator Register()
     {
 
-        if (!CodeVerify(code.text))
-        {
+        yield return new WaitForEndOfFrame();
 
-            yield return new WaitForEndOfFrame();
-
-            takePictureButton.interactable = false;
-            carName.interactable = false;
-            RegisterButton.interactable = false;
-            code.text = "";
-            carName.text = "";
-            Resources.UnloadUnusedAssets();
-            GC.Collect();
-        }
-
-
+        takePictureButton.interactable = false;
+        carName.interactable = false;
+        RegisterButton.interactable = false;
+        code.text = "";
+        carName.text = "";
+        Resources.UnloadUnusedAssets();
+        GC.Collect();
+        
 
 
     }
@@ -292,8 +245,7 @@ public class QRCodeController : MonoBehaviour
 
         StopAllCoroutines();
         backCam.Stop();
-        arduino.Close();
-        Debug.Log("Disable");
+        //Debug.Log("Disable");
     }
 
     public void ManualCodeInput()
@@ -319,30 +271,77 @@ public class QRCodeController : MonoBehaviour
         }
     }
 
-    IEnumerator Restart()
+    IEnumerator StartArduinoCOM()
     {
         yield return new WaitForSeconds(0.5f);
+        arduinoCOM = PlayerPrefs.GetString("ArduinoCOMRegistro");
+        arduino = new SerialPort(arduinoCOM, 9600);
+        arduino.ReadTimeout = 50;
+
+        if (arduinoCOM == "")
+        {
+            Debug.Log("Invalid Arduino Port");
+        }
+        else
+        {
+
+        }
+    }
+
+    IEnumerator SendMessageToArduino()
+    {
+        arduino.Open();
+        arduino.Write("voltah");
+        yield return new WaitForSeconds(10f);
+        arduino.Close();
+    }
+
+    IEnumerator StartWebCam()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (backCam == null)
+        {
+            Debug.Log("Unable to find back camera");
+            yield return null;
+        }
         backCam.Play();
+        StartCoroutine(WebCamUpdate());
+        yield return new WaitForSeconds(0.1f);
         StartCoroutine(QRRead());
-
-        try
-        {
-            arduino = new SerialPort(arduinoCOM, 9600);
-            arduino.ReadTimeout = 50;
-            arduino.Open();
-        }
-        catch (Exception e)
-        {
-
-        }
-
-
 
 
     }
+
+    IEnumerator WebCamUpdate()
+    {
+        while (true)
+        {
+            if (!backCam.isPlaying)
+            {
+                yield return null;
+            }
+            background.texture = backCam;
+            float ratio = (float)backCam.width / (float)backCam.height;
+            fit.aspectRatio = ratio;
+
+            float scaleY = backCam.videoVerticallyMirrored ? -1f : 1f;
+            background.rectTransform.localScale = new Vector3(1f, scaleY, 1f);
+
+            int orient = -backCam.videoRotationAngle;
+            background.rectTransform.localEulerAngles = new Vector3(0, 0, orient);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(mainPanel);
+            yield return new WaitForEndOfFrame();
+        }
+
+    }
+
     private void OnEnable()
     {
-        StartCoroutine(Restart());
+        //StartCoroutine(StartArduinoCOM());
+        //StartCoroutine(WebCamUpdate());
+        StartCoroutine(StartWebCam());
 
     }
 }

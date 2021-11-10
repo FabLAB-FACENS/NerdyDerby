@@ -219,7 +219,7 @@ public class Settings : MonoBehaviour
 
                     Debug.Log("WaitingMessage");
                 }
-
+                    
                 if (message != "")
                 {
                     Debug.Log(message);

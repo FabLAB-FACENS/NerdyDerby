@@ -130,42 +130,44 @@ void sixteenth()
 }
 void voltaH() {
   Sleepoff();
-  digitalWrite(11, HIGH); //LED-02-Vermelho
   ena();
   HR();  // Inicia o sentido horário
   while (PPR > passo)
   { // Enquanto PPR for maior que passo
     // Avança o passo
+    digitalWrite(13, HIGH); 
     digitalWrite(STP, LOW);
     delay(temp); //Tempo em Microseconds
     digitalWrite(STP, HIGH);
+    digitalWrite(13, LOW); 
     delay(temp);
     passo++; // Aumenta em 1 o valor de passo
   }
   passo = 0; // valor de passso muda pra 0
   ena2();
-  digitalWrite(11, LOW); //LED-02-Vermelho
   Sleepon();
 }
 
 void voltaAH() {
-  digitalWrite(10, HIGH); //LED-02-Azul
+  digitalWrite(13, HIGH); //LED-02-Azul
   ena();
   AH();      // Inicia o Sentido Anti-horário
   while (PPR > passo)
   { // Enquanto PPR for maior que passo
     // Avança o passo
-    digitalWrite(10, HIGH); //LED-02-Azul
+    digitalWrite(13, HIGH); //LED-02-Azul
     digitalWrite(STP, LOW);
     delay(temp);
     digitalWrite(STP, HIGH);
+    digitalWrite(13, LOW); //LED-02-Azul
     delay(temp);
     passo++;
+     
   }
   passo = 0;
   ena2();
   Sleepon();
-  digitalWrite(10, LOW); //LED-02-Azul
+ 
 }
 
 void ena2() {
