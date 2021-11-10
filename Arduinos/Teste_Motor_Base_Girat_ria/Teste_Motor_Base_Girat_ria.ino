@@ -28,6 +28,8 @@ void setup()
   digitalWrite(RST, HIGH);  // RST habilitado
   Serial.begin(9600);
   half();
+  Sleepon();
+  ena2();
   //Serial.println("Pressione: r- para resetar // s - para iniciar Sleep // o - para desativar Sleep");
   //delay(100);
   //Serial.println("1 para FULL - STEP // 2 para HALF - STEP // 3 para Quarter - STEP // 4 para Eighth - STEP // 5 para Sixteenth - STEP");
@@ -93,7 +95,7 @@ void full()
 void half()
 {
   PPR = 400;
-  temp = 25;
+  temp = 14;
   Serial.println("Modo Meio Passo(Half - Step)");
   digitalWrite(MS1, HIGH);
   digitalWrite(MS2, LOW);
@@ -127,6 +129,7 @@ void sixteenth()
   digitalWrite(MS3, HIGH);
 }
 void voltaH() {
+  Sleepoff();
   digitalWrite(11, HIGH); //LED-02-Vermelho
   ena();
   HR();  // Inicia o sentido horário
@@ -142,6 +145,7 @@ void voltaH() {
   passo = 0; // valor de passso muda pra 0
   ena2();
   digitalWrite(11, LOW); //LED-02-Vermelho
+  Sleepon();
 }
 
 void voltaAH() {
@@ -160,6 +164,7 @@ void voltaAH() {
   }
   passo = 0;
   ena2();
+  Sleepon();
   digitalWrite(10, LOW); //LED-02-Azul
 }
 
