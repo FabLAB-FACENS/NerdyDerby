@@ -53,28 +53,28 @@ void loop()
   } else if (data.indexOf("1") != -1) {
 
   } else if (data.indexOf("1") != -1) {
-    Serial.println("Full");
+    //Serial.println("Full");
     full();
   } else if (data.indexOf("2") != -1) {
-    Serial.println("Half");
+    //Serial.println("Half");
     half();
   } else if (data.indexOf("3") != -1) {
-    Serial.println("1 / 4");
+    //Serial.println("1 / 4");
     quarter();
   } else if (data.indexOf("4") != -1) {
-    Serial.println("1 / 8");
+    //Serial.println("1 / 8");
     eighth();
   } else if (data.indexOf("5") != -1) {
-    Serial.println("1 / 16");
+    //Serial.println("1 / 16");
     sixteenth();
   } else if (data.indexOf("reset") != -1) {
-    Serial.println("Iniciar Reset");
+    //Serial.println("Iniciar Reset");
     rst();
   } else if (data.indexOf("sleepOn") != -1) {
-    Serial.println("Iniciar Sleep");
+    //Serial.println("Iniciar Sleep");
     Sleepon();
   } else if (data.indexOf("sleepOff") != -1) {
-    Serial.println("Desligar Sleep");
+    //Serial.println("Desligar Sleep");
     Sleepoff();
   } else if (data.indexOf("TEST") != -1) {
     delay(1000);
@@ -87,7 +87,7 @@ void full()
 {
   PPR = 200;
   temp = 50;
-  Serial.println("Modo Passo Completo (Full - Step)");
+  //Serial.println("Modo Passo Completo (Full - Step)");
   digitalWrite(MS1, LOW);
   digitalWrite(MS2, LOW);
   digitalWrite(MS3, LOW);
@@ -96,7 +96,7 @@ void half()
 {
   PPR = 400;
   temp = 14;
-  Serial.println("Modo Meio Passo(Half - Step)");
+  //Serial.println("Modo Meio Passo(Half - Step)");
   digitalWrite(MS1, HIGH);
   digitalWrite(MS2, LOW);
   digitalWrite(MS3, LOW);
@@ -105,7 +105,7 @@ void quarter()
 {
   PPR = 800;
   temp = 25;
-  Serial.println("Modo Quarter - STEP (1 / 4)");
+  //Serial.println("Modo Quarter - STEP (1 / 4)");
   digitalWrite(MS1, LOW);
   digitalWrite(MS2, HIGH);
   digitalWrite(MS3, LOW);
@@ -114,7 +114,7 @@ void eighth()
 {
   PPR = 1600;
   temp = 12;
-  Serial.println("Modo Eighth - STEP (1 / 8)");
+  //Serial.println("Modo Eighth - STEP (1 / 8)");
   digitalWrite(MS1, HIGH);
   digitalWrite(MS2, HIGH);
   digitalWrite(MS3, LOW);
@@ -123,7 +123,7 @@ void sixteenth()
 { // Em sixteenth - 3200 passos
   PPR = 3200;
   temp = 6;
-  Serial.println("Modo Sixteenth - STEP (1 / 16)");
+  //Serial.println("Modo Sixteenth - STEP (1 / 16)");
   digitalWrite(MS1, HIGH);
   digitalWrite(MS2, HIGH);
   digitalWrite(MS3, HIGH);
@@ -178,12 +178,12 @@ void ena() {
 }
 void HR() {                // Sentido Horário
   passo = 0;
-  Serial.println("Sentido - Horario");
+  //Serial.println("Sentido - Horario");
   digitalWrite(DIR, HIGH);
 }
 void AH()  {               // Sentido Anti-Horário
   passo = 0;
-  Serial.println("Sentido - Anti-horario");
+  //Serial.println("Sentido - Anti-horario");
   digitalWrite(DIR, LOW);
 }
 void rst()  {      // Reseta os drivers
@@ -191,15 +191,15 @@ void rst()  {      // Reseta os drivers
   delay(10);
   digitalWrite(RST, HIGH);
   delay(10);
-  Serial.println("Reset OK");
+  //Serial.println("Reset OK");
 }
 void Sleepoff()  {   // Desativa o modo Sleep
-  Serial.println("Sleep off");
+  //Serial.println("Sleep off");
   digitalWrite(SLP, LOW);
   delay(10);
 }
 void Sleepon()  {   // Ativa o modo Sleep
-  Serial.println("Sleep on");
+  //Serial.println("Sleep on");
   digitalWrite(SLP, HIGH);
   delay(10);
 }

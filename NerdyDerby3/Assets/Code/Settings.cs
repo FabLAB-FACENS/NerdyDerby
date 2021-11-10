@@ -46,14 +46,14 @@ public class Settings : MonoBehaviour
         WebCamDevice[] devices = WebCamTexture.devices;
         webcamsList = new List<string>();
         webcamsList.Add(PlayerPrefs.GetString("webCamIndex"));
-        
+
         foreach (WebCamDevice device in devices)
         {
-            if(!webcamsList.Contains(device.name))
+            if (!webcamsList.Contains(device.name))
             {
                 webcamsList.Add(device.name);
             }
-            
+
         }
 
         webcamDropDown.ClearOptions();
@@ -91,7 +91,7 @@ public class Settings : MonoBehaviour
         COMPortsPista.Add(PlayerPrefs.GetString("ArduinoCOMPista"));
         foreach (string item in aux)
         {
-            if(!COMPortsRegistro.Contains(item))
+            if (!COMPortsRegistro.Contains(item))
             {
                 COMPortsRegistro.Add(item);
             }
@@ -113,32 +113,29 @@ public class Settings : MonoBehaviour
 
     public void PistaArduinoCOM_Change()
     {
-        StartCoroutine("PistaArduinoCOMTest");
+        StartCoroutine(PistaArduinoCOMTest());
     }
     public void RegistroArduinoCOM_Change()
     {
-        StartCoroutine("RegistroArduinoCOMTest");
+        StartCoroutine(RegistroArduinoCOMTest());
     }
 
     IEnumerator PistaArduinoCOMTest()
     {
         arduinoPistaStatusImage.sprite = null;
         arduinoPistaStatusImage.color = Color.clear;
-        bool isConnected = false;
         try
         {
             arduinoPista = new SerialPort(PistaCOMPortsDropDown.options[PistaCOMPortsDropDown.value].text, 9600);
             arduinoPista.ReadTimeout = 50;
             arduinoPista.Open();
-            isConnected = true;
-            Debug.Log("Connected to something");
         }
         catch (Exception ex)
         {
             Debug.Log(ex);
         }
 
-        if (isConnected)
+        if (arduinoPista.IsOpen)
         {
             Debug.Log("Testing Arduino");
             //yield return new WaitForSeconds(1f);
@@ -166,7 +163,7 @@ public class Settings : MonoBehaviour
 
             if (message.Contains("OK"))
             {
-                Debug.Log("arduino OK");
+                Debug.Log("arduino PISTA OK");
                 arduinoPistaStatusImage.sprite = OKSprite;
                 arduinoPistaStatusImage.color = Color.green;
                 PlayerPrefs.SetString("ArduinoCOMPista", PistaCOMPortsDropDown.options[PistaCOMPortsDropDown.value].text);
@@ -191,14 +188,11 @@ public class Settings : MonoBehaviour
     {
         arduinoRegistroStatusImage.sprite = null;
         arduinoRegistroStatusImage.color = Color.clear;
-        bool isConnected = false;
         try
         {
             arduinoRegistro = new SerialPort(RegistroCOMPortsDropDown.options[RegistroCOMPortsDropDown.value].text, 9600);
             arduinoRegistro.ReadTimeout = 50;
             arduinoRegistro.Open();
-            isConnected = true;
-            Debug.Log("Connected to something");
 
         }
         catch (Exception ex)
@@ -207,19 +201,24 @@ public class Settings : MonoBehaviour
 
         }
 
-        if (isConnected)
+        if (arduinoRegistro.IsOpen)
         {
             Debug.Log("Testing Arduino");
             //yield return new WaitForSeconds(1f);
             string message = "";
             for (int i = 0; i < 10; i++)
             {
-                arduinoRegistro.Write("TEST");
+
                 try
                 {
+                    arduinoRegistro.Write("TEST");
                     message = arduinoRegistro.ReadLine();
                 }
-                catch (TimeoutException) { }
+                catch (TimeoutException)
+                {
+
+                    Debug.Log("WaitingMessage");
+                }
 
                 if (message != "")
                 {
