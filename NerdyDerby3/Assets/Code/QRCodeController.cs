@@ -26,6 +26,7 @@ public class QRCodeController : MonoBehaviour
     public Button RegisterButton;
     public InputField webCamIndex;
     public RectTransform mainPanel;
+    public GameObject popUp;
 
 
     // Gerador de QR Codes https://qrexplore.com/generate/
@@ -99,27 +100,40 @@ public class QRCodeController : MonoBehaviour
 
     public void TakePicture_Click()
     {
+        Directory.CreateDirectory("CarPics/" + code.text);
+        FileStream file = File.Open("CarPics/" + code.text + "/" + code.text + ".txt", FileMode.Create);
+        BinaryWriter binary = new BinaryWriter(file);
+        byte[] name = System.Text.Encoding.UTF8.GetBytes(carName.text);
+        binary.Write(name);
+        file.Close();
+
         takePictureButton.interactable = false;
         StopAllCoroutines();
-        arduino.Write("voltah");
+        try
+        {
+            arduino.Write("voltah");
+        }
+        catch (Exception e)
+        {
+
+        }
+
         StartCoroutine("MakeGif");
-       
+
     }
 
     public IEnumerator MakeGif()
     {
-        
+
         for (int i = 0; i < 23; i++)
         {
             yield return new WaitForSeconds(0.5f);
             TakePicture(i);
-            
         }
         backCam.Stop();
         if (carName.text != "")
         {
             RegisterButton.interactable = true;
-            takePictureButton.interactable = false;
         }
         //takePictureButton.interactable = true;
         StartCoroutine("ShowGif");
@@ -165,7 +179,7 @@ public class QRCodeController : MonoBehaviour
     {
         //Convert to PNG
         Texture2D tex = ToTexture2D(backCam);
-        Directory.CreateDirectory("CarPics/" + code.text);
+
         FileStream file = File.Open("CarPics/" + code.text + "/" + code.text + index.ToString() + ".png", FileMode.Create);
         BinaryWriter binary = new BinaryWriter(file);
         byte[] img = tex.EncodeToPNG();
@@ -176,34 +190,55 @@ public class QRCodeController : MonoBehaviour
     public void Name_change()
     {
 
-        if (carName.text != "" && !backCam.isPlaying)
+        if (carName.text != "")
         {
-            RegisterButton.interactable = true;
+            takePictureButton.interactable = true;
         }
         else
         {
-            RegisterButton.interactable = false;
+            takePictureButton.interactable = false;
         }
     }
     public IEnumerator Register()
     {
 
-        //Save File
-        FileStream file = File.Open("CarPics/" + code.text + "/" + code.text + ".txt", FileMode.Create);
-        BinaryWriter binary = new BinaryWriter(file);
-        byte[] name = System.Text.Encoding.UTF8.GetBytes(carName.text);
-        binary.Write(name);
-        file.Close();
+        if (!CodeVerify(code.text))
+        {
 
-        yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
 
-        takePictureButton.interactable = false;
-        RegisterButton.interactable = false;
-        code.text = "Apresente o QRCode";
-        carName.text = "";
-        Resources.UnloadUnusedAssets();
-        GC.Collect();
+            takePictureButton.interactable = false;
+            carName.interactable = false;
+            RegisterButton.interactable = false;
+            code.text = "";
+            carName.text = "";
+            Resources.UnloadUnusedAssets();
+            GC.Collect();
+        }
 
+
+
+
+    }
+    public bool CodeVerify(string _code)
+    {
+        if (_code != "" && File.Exists("CarPics/" + _code + "/" + _code + ".txt"))
+        {
+            popUp.SetActive(true);
+            popUp.GetComponentInChildren<Text>().text = "Código já cadastro";
+            Debug.Log("Car already exisits");
+            StartCoroutine(ClosePopUp());
+            RegisterButton.interactable = false;
+            return true;
+        }
+        return false;
+
+    }
+
+    IEnumerator ClosePopUp()
+    {
+        yield return new WaitForSeconds(3f);
+        popUp.SetActive(false);
     }
 
     public Texture2D ToTexture2D(Texture texture)
@@ -231,14 +266,17 @@ public class QRCodeController : MonoBehaviour
 
             if (result != null && Directory.Exists("CarPics/" + result.Text))
             {
-                code.text = "Carro cadastrado";
+                //code.text = "Carro cadastrado";
+                popUp.GetComponentInChildren<Text>().text = "Carro já cadastrado";
+                popUp.SetActive(true);
+                StartCoroutine(ClosePopUp());
                 Debug.Log("Car already exisits");
                 result = null;
             }
             yield return new WaitForEndOfFrame();
         }
         code.text = result.Text;
-        takePictureButton.interactable = true;
+        carName.gameObject.SetActive(true);
         Debug.Log("DECODED TEXT FROM QR: " + result.Text);
 
         takePictureButton.interactable = true;
@@ -247,32 +285,64 @@ public class QRCodeController : MonoBehaviour
 
     private void OnDisable()
     {
-        code.text = "Show QRCode in the Camera";
+        //code.text = "Show QRCode in the Camera";
+        carName.text = "";
         takePictureButton.interactable = false;
         RegisterButton.interactable = false;
-        
+
         StopAllCoroutines();
         backCam.Stop();
         arduino.Close();
         Debug.Log("Disable");
     }
 
+    public void ManualCodeInput()
+    {
+        if (code.text != "")
+        {
+            if (!CodeVerify(code.text))
+            {
+                carName.interactable = true;
+                Name_change();
+            }
+            else
+            {
+                carName.interactable = false;
+                takePictureButton.interactable = false;
+            }
+
+        }
+        else
+        {
+            carName.interactable = false;
+            takePictureButton.interactable = false;
+        }
+    }
+
     IEnumerator Restart()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.5f);
         backCam.Play();
-
-        arduino = new SerialPort(arduinoCOM, 9600);
-        arduino.ReadTimeout = 50;
-        arduino.Open();
-
         StartCoroutine(QRRead());
-        
+
+        try
+        {
+            arduino = new SerialPort(arduinoCOM, 9600);
+            arduino.ReadTimeout = 50;
+            arduino.Open();
+        }
+        catch (Exception e)
+        {
+
+        }
+
+
+
+
     }
     private void OnEnable()
     {
         StartCoroutine(Restart());
-
 
     }
 }

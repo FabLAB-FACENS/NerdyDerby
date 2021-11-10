@@ -23,8 +23,12 @@ public class ScreenManager : MonoBehaviour
         {
             ESC_Pressed();
         }
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            F1_Press();
+        }
     }
-
+        
     public void OpenSetting()
     {
         SettingsPanel.SetActive(true);
@@ -33,7 +37,14 @@ public class ScreenManager : MonoBehaviour
     public void  CloseSettings()
     {
         SettingsPanel.SetActive(false);
-    }   
+    }
+
+    public void F1_Press()
+    {
+       
+        RankingPanel.SetActive(false);
+        MainMenu.SetActive(false);
+    }
 
     public void RacePanel_Click()
     {
