@@ -276,10 +276,10 @@ public class QRCodeController : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         code.text = result.Text;
-        carName.gameObject.SetActive(true);
+        carName.interactable = true;
         Debug.Log("DECODED TEXT FROM QR: " + result.Text);
 
-        takePictureButton.interactable = true;
+        //takePictureButton.interactable = true;
 
     }
 
