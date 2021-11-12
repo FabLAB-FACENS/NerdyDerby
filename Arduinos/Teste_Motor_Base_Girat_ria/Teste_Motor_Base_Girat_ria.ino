@@ -77,7 +77,6 @@ void loop()
     //Serial.println("Desligar Sleep");
     Sleepoff();
   } else if (data.indexOf("TEST") != -1) {
-    delay(1000);
     Serial.println  ("OK");
   }
   data = "";

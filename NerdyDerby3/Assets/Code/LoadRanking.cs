@@ -20,7 +20,7 @@ public class LoadRanking : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //StartCoroutine(AddRacersInRanking());
+        StartCoroutine(AddRacersInRanking());
     }
     // Update is called once per frame
     void Update()
@@ -30,7 +30,7 @@ public class LoadRanking : MonoBehaviour
 
     private void OnEnable()
     {
-        StartCoroutine(AddRacersInRanking());
+        //StartCoroutine(AddRacersInRanking());
     }
 
     private void OnDisable()
@@ -44,55 +44,67 @@ public class LoadRanking : MonoBehaviour
     }
     IEnumerator AddRacersInRanking()
     {
+
         //yield return new WaitForSeconds(1f);
         foreach (Transform child in rankingCointaner)
         {
             Destroy(child.gameObject);
         }
 
-
+        Debug.Log("Iniciando Leitura");
         DirectoryInfo info = new DirectoryInfo("CarPics");
-        FileInfo[] files = info.GetFiles();
 
-        racers = new List<Racer>();
-        foreach (FileInfo f in files)
+        if (Directory.Exists("CarPics"))
         {
-            if (f.Name.Contains(".txt"))
+            Debug.Log("Diretório Encontrado");
+        }
+        else
+        {
+            Debug.Log("Diretório não Encontrado");
+        }
+
+
+
+        DirectoryInfo[] directorys = info.GetDirectories();
+
+        Debug.Log("arquivos encontrados " + directorys.Length);
+        racers = new List<Racer>();
+        foreach (DirectoryInfo d in directorys)
+        {
+            Debug.Log(d.Name);
+            StreamReader stream = new StreamReader("Carpics/" + d.Name + "/" + d.Name + ".txt");
+            string text = stream.ReadToEnd();
+            string[] texts = text.Split(',');
+            stream.Close();// MUITO IMPORTANTE
+            Racer racer = new Racer();
+
+            racer.name = texts[0];
+            List<int> times = new List<int>();
+            for (int i = 1; i < texts.Length; i++)
             {
-                //Debug.Log(f.Name);
-                StreamReader stream = new StreamReader("CarPics/" + f.Name);
-                string text = stream.ReadToEnd();
-                string[] texts = text.Split(',');
-                stream.Close();// MUITO IMPORTANTE
-                Racer racer = new Racer();
-
-                racer.name = texts[0];
-                List<int> times = new List<int>();
-                for (int i = 1; i < texts.Length; i++)
-                {
-                    times.Add(int.Parse(texts[i]));
-                }
-
-                if (times.Count >= 1)
-                {
-                    times.Sort();
-                    racer.bestTime = times[0];
-                }
-                else
-                {
-                    racer.bestTime = 9999;
-                }
-
-                racers.Add(racer);
+                times.Add(int.Parse(texts[i]));
             }
+
+            if (times.Count >= 1)
+            {
+                times.Sort();
+                racer.bestTime = times[0];
+            }
+            else
+            {
+                racer.bestTime = 9999;
+            }
+
+            racers.Add(racer);
+
         }
         racers.Sort(SortByTime);
         int cont = 1;
         foreach (Racer r in racers)
-        {
+        {   
             GameObject actualRacer = Instantiate(racerPrefab, rankingCointaner);
-            actualRacer.transform.GetChild(1).GetChild(0).GetComponent<Text>().text = r.name;
-            actualRacer.transform.GetChild(1).GetChild(1).GetComponent<Text>().text = r.bestTime.ToString();
+            actualRacer.transform.GetChild(0).GetChild(1).GetComponent<Text>().text = r.name;
+            actualRacer.transform.GetChild(0).GetChild(2).GetComponent<Text>().text = r.bestTime.ToString();
             actualRacer.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = cont.ToString();
             cont++;
         }

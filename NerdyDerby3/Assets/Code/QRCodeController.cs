@@ -39,10 +39,15 @@ public class QRCodeController : MonoBehaviour
         //Setup files folder
         if (!Directory.Exists("CarPics"))
         {
+            Debug.Log("Diretório não Encontrado");
             Directory.CreateDirectory("CarPics");
         }
+        else
+        {
+            Debug.Log("Diretório Encontrado");
+        }
 
-        StartCoroutine(StartArduinoCOM());
+        
 
         //Config Arduino
 
@@ -69,7 +74,7 @@ public class QRCodeController : MonoBehaviour
         file.Close();
 
         takePictureButton.interactable = false;
-        StopAllCoroutines();
+        //StopAllCoroutines();
 
         StartCoroutine(SendMessageToArduino());
 
@@ -92,7 +97,8 @@ public class QRCodeController : MonoBehaviour
             RegisterButton.interactable = true;
         }
         //takePictureButton.interactable = true;
-        StartCoroutine("ShowGif");
+        StopAllCoroutines();
+        StartCoroutine(ShowGif());
 
     }
 
@@ -169,7 +175,7 @@ public class QRCodeController : MonoBehaviour
         carName.text = "";
         Resources.UnloadUnusedAssets();
         GC.Collect();
-        
+
 
 
     }
@@ -238,6 +244,7 @@ public class QRCodeController : MonoBehaviour
 
     private void OnDisable()
     {
+        arduino.Close();
         //code.text = "Show QRCode in the Camera";
         carName.text = "";
         takePictureButton.interactable = false;
@@ -273,7 +280,7 @@ public class QRCodeController : MonoBehaviour
 
     IEnumerator StartArduinoCOM()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return null;
         arduinoCOM = PlayerPrefs.GetString("ArduinoCOMRegistro");
         arduino = new SerialPort(arduinoCOM, 9600);
         arduino.ReadTimeout = 50;
@@ -284,16 +291,17 @@ public class QRCodeController : MonoBehaviour
         }
         else
         {
-
+            arduino.Open();
         }
+
     }
 
     IEnumerator SendMessageToArduino()
     {
-        arduino.Open();
+        Debug.Log("anda caraio");
         arduino.Write("voltah");
-        yield return new WaitForSeconds(10f);
-        arduino.Close();
+        yield return null;
+
     }
 
     IEnumerator StartWebCam()
@@ -339,7 +347,7 @@ public class QRCodeController : MonoBehaviour
 
     private void OnEnable()
     {
-        //StartCoroutine(StartArduinoCOM());
+        StartCoroutine(StartArduinoCOM());
         //StartCoroutine(WebCamUpdate());
         StartCoroutine(StartWebCam());
 
