@@ -6,6 +6,7 @@
 [Bb]uild
 /[Bb]uilds/
 /[Ll]ibrary/
+/CarPics/
 sysinfo.txt
 *.stackdump
 /Assets/AssetStoreTools*
@@ -29,6 +30,7 @@ sysinfo.txt
 .consulo/
 /*.tmp
 /*.svd
+/*.rar
  
 # ============ #
 # OS generated #
