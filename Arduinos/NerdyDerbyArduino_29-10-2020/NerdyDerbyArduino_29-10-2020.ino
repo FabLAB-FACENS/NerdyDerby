@@ -10,8 +10,8 @@ SoftwareSerial contagem(5, 4);//declaração da instancia sofware serial que se 
 Servo servo;//declaração da instancia que controla os servos
 
 //Sensores
-#define track1Sensor A1 //Porta de controle da pista 1
-#define track2Sensor A0 //Porta de controle da pista 2
+#define track1Sensor A0 //Porta de controle da pista 1
+#define track2Sensor A1 //Porta de controle da pista 2
 #define track3Sensor A2 //Porta de controle da pista 3
 
 String data = ""; //variavel que recebe as mensagens enviadas pelo computador
