@@ -265,9 +265,6 @@ public class RaceController : MonoBehaviour
             }
             yield return new WaitForSeconds(0.1f);
         }
-
-
-
     }
 
     void ReadRacerName(string path, int track)
@@ -420,6 +417,7 @@ public class RaceController : MonoBehaviour
         for (int i = 0; i < positionText.Length; i++)
         {
             positionText[i].text = "";
+            
         }
         rankingPanel.SetActive(true);
         racersTimes.Clear();
@@ -432,6 +430,12 @@ public class RaceController : MonoBehaviour
             RemoveRacer(i);
         }
         racers.Clear();
+        for (int i = 0; i < 3; i++)
+        {
+            positionText[i].text = "0";
+            timesText[i].text = "0000";
+        }
+        
         StartCoroutine(RacerQRRead());
     }
     public int SortByTime(racerPosition r1, racerPosition r2)

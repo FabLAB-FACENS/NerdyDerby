@@ -20,7 +20,7 @@ public class LoadRanking : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(AddRacersInRanking());
+        //StartCoroutine(AddRacersInRanking());
     }
     // Update is called once per frame
     void Update()
@@ -30,7 +30,7 @@ public class LoadRanking : MonoBehaviour
 
     private void OnEnable()
     {
-        //StartCoroutine(AddRacersInRanking());
+        StartCoroutine(AddRacersInRanking());
     }
 
     private void OnDisable()
