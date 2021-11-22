@@ -3,15 +3,15 @@
 #include <SoftwareSerial.h> //Biblioteca que habilita a utilização de comunicação serial entre arduinos
 #include <Servo.h> //Biblioteca que habilita a utilização do servomotor
 
-SoftwareSerial placar(2, 3);//declaração da instancia software serial que se comunica com o arduino do placar(chegada)
-SoftwareSerial contagem(4, 5);//declaração da instancia sofware serial que se comunica com o ardunino da contagem regressiva(largada)
+SoftwareSerial placar(3, 2);//declaração da instancia software serial que se comunica com o arduino do placar(chegada)
+SoftwareSerial contagem(5, 4);//declaração da instancia sofware serial que se comunica com o ardunino da contagem regressiva(largada)
 
-#define servoPin 8//Definição da porta de saida que controla os servos
+#define servoPin 6//Definição da porta de saida que controla os servos
 Servo servo;//declaração da instancia que controla os servos
 
 //Sensores
-#define track1Sensor A1 //Porta de controle da pista 1
-#define track2Sensor A0 //Porta de controle da pista 2
+#define track1Sensor A0 //Porta de controle da pista 1
+#define track2Sensor A1 //Porta de controle da pista 2
 #define track3Sensor A2 //Porta de controle da pista 3
 
 String data = ""; //variavel que recebe as mensagens enviadas pelo computador
@@ -41,15 +41,6 @@ int timepista2;//Tempo da pista2
 int timepista3;//Tempo da pista3
 
 void setup() {
-  pinMode(ENA, OUTPUT);
-  pinMode(MS1, OUTPUT);
-  pinMode(MS2, OUTPUT);
-  pinMode(MS3, OUTPUT);
-  pinMode(STP, OUTPUT);
-  pinMode(DIR, OUTPUT);
-  digitalWrite(SLP, LOW);   // Sleep desabilitado
-  digitalWrite(DIR, HIGH);  // Sentido Horário habilitado
-  digitalWrite(RST, HIGH);  // RST habilitado
 
 
 

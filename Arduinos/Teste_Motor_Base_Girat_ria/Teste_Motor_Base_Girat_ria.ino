@@ -51,8 +51,6 @@ void loop()
   } else if (data.indexOf("voltaah") != -1) {
     voltaAH();
   } else if (data.indexOf("1") != -1) {
-
-  } else if (data.indexOf("1") != -1) {
     //Serial.println("Full");
     full();
   } else if (data.indexOf("2") != -1) {

@@ -6,11 +6,11 @@
 #include <SerialDisplay.h> //Biblicoteca para utilização dos displays da Robocore
 #include <TM1637Display.h> //Biblioteca para utilizaçãod os displays de 4 digitos
 
-TM1637Display displayTime3(9, 8);//Declaração das portas para os displays de 4 digitos
-TM1637Display displayTime2(11, 10);//Declaração das portas para os displays de 4 digitos
-TM1637Display displayTime1(13, 12);//Declaração das portas para os displays de 4 digitos
+TM1637Display displayTime3(7, 6);//Declaração das portas para os displays de 4 digitos CLK/DIO
+TM1637Display displayTime2(9, 8);//Declaração das portas para os displays de 4 digitos CLK/DIO
+TM1637Display displayTime1(11, 10);//Declaração das portas para os displays de 4 digitos CLK/DIO
 
-SerialDisplay displaysPositions(7, 6, 3); // Dados, clock, numero de modulos
+SerialDisplay displaysPositions(12, 13, 3); // Dados, clock, numero de modulos
 
 SoftwareSerial mySerial(2, 3); //Declaração das portas para utilização de comunicação serial
 String data = ""; //Variavel que armazena as mensagem recebidas por serial
@@ -22,6 +22,12 @@ void setup() {
   displayTime1.setBrightness(5);//Controle de luminosidade do display de 4 digitos
   displayTime2.setBrightness(5);//Controle de luminosidade do display de 4 digitos
   displayTime3.setBrightness(5);//Controle de luminosidade do display de 4 digitos
+  ShowPosition(1,1);
+  ShowPosition(2,2);
+  ShowPosition(3,3);
+  ShowTime1(1111);
+  ShowTime2(2222);
+  ShowTime3(3333);
 }
 
 void loop() {
