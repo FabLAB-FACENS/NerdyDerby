@@ -8,6 +8,7 @@ using System.IO.Ports;
 using UnityEngine.UI;
 using System;
 
+
 public class racerPosition
 {
     public int track;
@@ -19,8 +20,10 @@ public class RaceController : MonoBehaviour
     SerialPort arduino;
     private WebCamTexture backCam;
     public Image[] images;
-    public Text[] names;
+    public InputField[] names;
+    public Text[] nameText;
     public Button[] remove;
+
     public Dictionary<int, string> racers;
     Coroutine qrReader;
     public Button racerButton;
@@ -34,6 +37,7 @@ public class RaceController : MonoBehaviour
     public GameObject positionPanel;
     public Text[] positionText;
     public Text[] timesText;
+    public Dictionary<int, Coroutine> trackGif;
     List<racerPosition> racersTimes;
 
 
@@ -41,8 +45,9 @@ public class RaceController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        trackGif = new Dictionary<int, Coroutine>();
         racersTimes = new List<racerPosition>();
-        string arduinoCOM = PlayerPrefs.GetString("ArduinoCOM");
+        string arduinoCOM = PlayerPrefs.GetString("ArduinoCOMPista");
         Debug.Log(arduinoCOM);
 
         if (arduinoCOM == "")
@@ -76,27 +81,54 @@ public class RaceController : MonoBehaviour
                 result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
                 if (result != null)
                 {
-                    if (!File.Exists("CarPics/" + result.Text + "/" + result.Text + ".png"))
+                    Debug.Log("QR: " + result.Text);
+                    if (!File.Exists("CarPics/" + result.Text + "/" + result.Text + "0.png"))
                     {
                         popUp.SetActive(true);
                         popUp.GetComponentInChildren<Text>().text = "Racer not registred";
                         result = null;
                     }
-                    else if (racers.ContainsValue(result.Text) == true)
+                    else if (racers.ContainsValue(result.Text.ToUpper()) == true)
                     {
                         //Debug.Log("Player Already in Race");
-                        //popUp.SetActive(true);
-                        //popUp.GetComponentInChildren<Text>().text = "Racer Already in Race";
+                        popUp.SetActive(true);
+                        popUp.GetComponentInChildren<Text>().text = "Racer Already in Race";
                         result = null;
                     }
                     else
                     {
-                        AddRacer(result);
+                        AddRacer(result.Text, -1);
                     }
                 }
                 yield return new WaitForEndOfFrame();
             } while (result == null);
             yield return new WaitForEndOfFrame();
+        }
+    }
+
+
+    public void ManualInputCode(int track)
+    {
+
+        string _code = names[track].text;
+        Debug.Log("Manual: " +_code);
+
+        if (!File.Exists("CarPics/" + _code + "/" + _code + "0.png"))
+        {
+            popUp.SetActive(true);
+            popUp.GetComponentInChildren<Text>().text = "Racer not registred";
+
+        }
+        else if (racers.ContainsValue(_code.ToUpper()) == true)
+        {
+            //Debug.Log("Player Already in Race");
+            popUp.SetActive(true);
+            popUp.GetComponentInChildren<Text>().text = "Racer Already in Race";
+
+        }
+        else
+        {
+            AddRacer(_code, track);
         }
     }
     // Update is called once per frame
@@ -195,23 +227,55 @@ public class RaceController : MonoBehaviour
         }
 
     }
-    void ReadImage(string path, int track)
+    IEnumerator ReadImage(string path, int track)
     {
-        AspectRatioFitter arf = images[track].gameObject.GetComponent<AspectRatioFitter>();
-        byte[] file = File.ReadAllBytes("CarPics/" + path + "/" + path + ".png");
-        Texture2D img = new Texture2D(backCam.width, backCam.height);
-        img.LoadImage(file);
-        images[track].sprite = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f));
-        float ratio = (float)backCam.width / (float)backCam.height;
-        arf.aspectRatio = ratio;
+        int cont = 0;
+        AspectRatioFitter arf;
+        byte[] file;
+        Texture2D img;
+        float ratio;
 
+        List<Sprite> gif = new List<Sprite>();
+
+
+        for (int i = 0; i < 23; i++)
+        {
+
+            //Debug.Log(path + " " + track);
+            arf = images[track].gameObject.GetComponent<AspectRatioFitter>();
+            file = File.ReadAllBytes("CarPics/" + path + "/" + path + i + ".png");
+            img = new Texture2D(backCam.width, backCam.height);
+            img.LoadImage(file);
+            gif.Add(Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(0.5f, 0.5f)));
+            ratio = (float)backCam.width / (float)backCam.height;
+            arf.aspectRatio = ratio;
+
+        }
+
+        while (true)
+        {
+            images[track].sprite = gif[cont];
+            if (cont == 22)
+            {
+                cont = 0;
+            }
+            else
+            {
+                cont++;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
     }
-    void ReadRacerName(string path, Text destiny)
+
+    void ReadRacerName(string path, int track)
     {
         StreamReader stream = new StreamReader("CarPics/" + path + "/" + path + ".txt");
         string text = stream.ReadToEnd();
         String[] texts = text.Split(',');
-        destiny.text = texts[0];
+        nameText[track].text = texts[0];
+        nameText[track].gameObject.SetActive(true);
+        names[track].text = "";
+        names[track].gameObject.SetActive(false);
         stream.Close();// MUITO IMPORTANTE
     }
     public void Remove_Click(int track)
@@ -234,16 +298,21 @@ public class RaceController : MonoBehaviour
             rankingPanel.SetActive(true);
         }
     }
-    void AddRacer(Result result)
+    public void AddRacer(string _code, int track)
     {
-        int track = 0;
-        while (racers.ContainsKey(track))
+       
+        if (track == -1)
         {
             track++;
+            while (racers.ContainsKey(track))
+            {
+                track++;
+            }
         }
-        ReadImage(result.Text, track);
-        ReadRacerName(result.Text, names[track]);
-        racers.Add(track, result.Text);
+
+        trackGif.Add(track, StartCoroutine(ReadImage(_code, track)));
+        ReadRacerName(_code, track);
+        racers.Add(track, _code.ToUpper());
         racerButton.interactable = true;
         remove[track].interactable = true;
         arduino.Write("add" + track);
@@ -256,7 +325,7 @@ public class RaceController : MonoBehaviour
 
 
         string webCamIndex = PlayerPrefs.GetString("webCamIndex");
- 
+
         backCam = new WebCamTexture(webCamIndex);
         if (backCam == null)
         {
@@ -279,15 +348,33 @@ public class RaceController : MonoBehaviour
         racers.Clear();
         backCam.Stop();
         StopAllCoroutines();
+
     }
+
+
     public void RemoveRacer(int track)
     {
-        names[track].text = "Waiting Racer";
+        Coroutine aux;
+        if (trackGif.TryGetValue(track, out aux))
+        {
+            trackGif.Remove(track);
+            StopCoroutine(aux);
+        }
+        //trackGif.Clear();
+        names[track].text = "...";
+        names[track].gameObject.SetActive(true);
+        nameText[track].text = "";
+        nameText[track].gameObject.SetActive(false);
+
         remove[track].interactable = false;
+        //trackGif.Remove(track);
         images[track].sprite = placeholder;
         float ratio = (float)placeholder.rect.width / (float)placeholder.rect.height;
         images[track].GetComponent<AspectRatioFitter>().aspectRatio = ratio;
         arduino.Write("rmv" + track);
+        Resources.UnloadUnusedAssets();
+        GC.Collect();
+
     }
 
     void SaveTime(int track, int time)
@@ -325,11 +412,12 @@ public class RaceController : MonoBehaviour
         {
             yield return new WaitForSeconds(0.1f);
         }
-        
+
         positionPanel.SetActive(false);
         for (int i = 0; i < positionText.Length; i++)
         {
             positionText[i].text = "";
+            
         }
         rankingPanel.SetActive(true);
         racersTimes.Clear();
@@ -342,6 +430,12 @@ public class RaceController : MonoBehaviour
             RemoveRacer(i);
         }
         racers.Clear();
+        for (int i = 0; i < 3; i++)
+        {
+            positionText[i].text = "0";
+            timesText[i].text = "0000";
+        }
+        
         StartCoroutine(RacerQRRead());
     }
     public int SortByTime(racerPosition r1, racerPosition r2)
