@@ -10,6 +10,7 @@ public class ScreenManager : MonoBehaviour
     public GameObject RegisterPanel;
     public GameObject RacePanel;
     public GameObject SettingsPanel;
+    public GameObject resultsPanel;
     // Start is called before the first frame update
     void Start()
     {
@@ -21,10 +22,15 @@ public class ScreenManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            ESC_Pressed();
+            if (!resultsPanel.activeSelf)
+            {
+                ESC_Pressed();
+            }
+            
         }
         if (Input.GetKeyDown(KeyCode.F1))
         {
+            
             F1_Press();
         }
     }
